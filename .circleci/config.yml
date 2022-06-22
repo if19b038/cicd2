@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run: 
           name: checkstyle
-          command: mvn site
+          command: mvn checkstyle:checkstyle
 
       - run:
           name: Test
