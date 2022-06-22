@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run: 
           name: checkstyle
-          command: maven checkstyle:checkstyle
+          command: maven site
 
       - run:
           name: Test
