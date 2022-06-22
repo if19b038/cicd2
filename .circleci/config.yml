@@ -17,6 +17,9 @@ jobs:
       - run:
           name: Login to DockerHub
           command: docker login -u cicdname -p Unbenannt
+       - run:
+          name: Test
+          command: mvn test
 
       # Download and cache dependencies
       - restore_cache:
