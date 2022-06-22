@@ -17,9 +17,6 @@ jobs:
       - run:
           name: Login to DockerHub
           command: docker login -u cicdname -p Unbenannt
-       - run:
-          name: Test
-          command: mvn test
 
       # Download and cache dependencies
       - restore_cache:
@@ -38,6 +35,10 @@ jobs:
 
       # build and push docker image to docker hub
       - run: mvn clean compile jib:build -Dimage=cicdname/cicd:$CIRCLE_BUILD_NUM
+      
+      - run:
+          name: Test
+          command: mvn test
 
       # store raw contents of src code
       - store_artifacts:
