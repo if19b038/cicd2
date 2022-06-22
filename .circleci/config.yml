@@ -34,10 +34,14 @@ jobs:
           key: sample-springboot-api-{{ checksum "pom.xml" }}
         
       # package into a jar
-      - run: mvn clean package
+      - run: 
+          name: generate jar
+          command: mvn clean package
 
       # build and push docker image to docker hub
-      - run: mvn clean compile jib:build -Dimage=cicdname/cicd:$CIRCLE_BUILD_NUM
+      - run: 
+          name: publish image
+          command: mvn clean compile jib:build -Dimage=cicdname/cicd:$CIRCLE_BUILD_NUM
       
 
       # store raw contents of src code
