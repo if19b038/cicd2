@@ -1,26 +1,42 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
-version: 2.1
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+version: 2
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+  build:
     docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
-    steps:
-      - checkout
-      - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+      - image: cimg/openjdk:17.0
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
-workflows:
-  say-hello-workflow:
-    jobs:
-      - say-hello
+    working_directory: ~/sample-springboot-api
+    
+    steps:
+      # git pull
+      - checkout
+
+      # setup testing env
+      # the following commented lines are not allowed in the free version of circleci
+      #       - setup_remote_docker:
+      #           docker_layer_caching: true
+      - run:
+          name: Login to DockerHub
+          command: docker login -u cicdname -p Unbenannt
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - sample-springboot-api-{{ checksum "pom.xml" }}
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: sample-springboot-api-{{ checksum "pom.xml" }}
+        
+      # package into a jar
+      - run: mvn clean package
+
+      # build and push docker image to docker hub
+      - run: mvn clean compile jib:build -Dimage=cicdname/cicd:$CIRCLE_BUILD_NUM
+
+      # store raw contents of src code
+      - store_artifacts:
+          path: target/classes
+          destination: cicd
