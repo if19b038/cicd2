@@ -1,0 +1,51 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:17.0
+
+    working_directory: ~/sample-springboot-api
+    
+    steps:
+      # git pull
+      - checkout
+      - run: 
+          name: checkstyle
+          command: mvn checkstyle:checkstyle
+
+      - run:
+          name: Test
+          command: mvn test
+      
+      - run:
+          name: Login to DockerHub
+          command: docker login -u cicdname -p Unbenannt
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - sample-springboot-api-{{ checksum "pom.xml" }}
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: sample-springboot-api-{{ checksum "pom.xml" }}
+        
+      # package into a jar
+      - run: 
+          name: generate jar
+          command: mvn clean package
+
+      # build and push docker image to docker hub
+      - run: 
+          name: publish image
+          command: mvn clean compile jib:build -Dimage=cicdname/cicd:$CIRCLE_BUILD_NUM
+          when: on_success
+      
+
+      # store raw contents of src code
+      - store_artifacts:
+          path: target/classes
+          destination: cicd
