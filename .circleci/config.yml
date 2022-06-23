@@ -42,6 +42,7 @@ jobs:
       - run: 
           name: publish image
           command: mvn clean compile jib:build -Dimage=cicdname/cicd:$CIRCLE_BUILD_NUM
+          when: on_success
       
 
       # store raw contents of src code
