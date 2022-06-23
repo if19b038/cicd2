@@ -1,6 +1,10 @@
 version: 2
 jobs:
   build:
+   filters:
+      branches:
+        only:
+          - master
     docker:
       - image: cimg/openjdk:17.0
 
